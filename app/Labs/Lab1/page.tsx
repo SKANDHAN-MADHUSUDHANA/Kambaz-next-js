@@ -54,7 +54,7 @@ export default function Lab1() {
             <ul id="wd-my-books">
                 <li>Dune</li>
                 <li>Lord of the Rings</li>
-                <li>Ender's Game</li>
+                <li>Ender&pos;s Game</li>
                 <li>Red Mars</li>
                 <li>The Forever War</li>
             </ul>
@@ -64,7 +64,7 @@ export default function Lab1() {
                  <li>Atomic Habits</li>
                 <li>The Shoe Dog</li>
                 <li>Deep Work</li>
-                <li>Can't Hurt Me</li>
+                <li>Can&pos;t Hurt Me</li>
                 <li>Rich Dad Poor Dad</li>
             </ul>
         </div>
