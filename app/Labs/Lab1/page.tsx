@@ -265,11 +265,11 @@ export default function Lab1() {
         </div>
 
         <h4>Anchor tag</h4>
-        Please
+        Please&nbsp; 
         <a href="https://www.lipsum.com" id="wd-lipsum">click here</a>
-        to get dummy text<br/>
-        <a href="https://github.com/SKANDHAN-MADHUSUDHANA/Kambaz-next-js" id="wd-kambaz-github">
-           Github</a>
+         &nbsp;to get dummy text<br/>
+        This is my project&nbsp;<a href="https://github.com/SKANDHAN-MADHUSUDHANA/Kambaz-next-js" id="wd-kambaz-github">
+           Github</a>&nbsp;
 
 
 
