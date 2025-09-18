@@ -59,7 +59,7 @@ export default function AssignmentEditor() {
               </select>
               <br /><br />
               <strong>Online Entry Options</strong><br />
-              <input type="checkbox" id="wd-text-entry" defaultChecked />
+              <input type="checkbox" id="wd-text-entry" />
               <label htmlFor="wd-text-entry">Text Entry</label><br />
               <input type="checkbox" id="wd-website-url" />
               <label htmlFor="wd-website-url">Website URL</label><br />
