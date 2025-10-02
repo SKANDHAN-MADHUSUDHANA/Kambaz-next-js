@@ -1,5 +1,7 @@
-export default function calendar() {
-    return(
-        <div><h1>Calendar</h1></div>
-    );
+export default function Calendar() {
+  return (
+    <div id="wd-calendar">
+      <h2>Calendar</h2>
+    </div>
+  );
 }
