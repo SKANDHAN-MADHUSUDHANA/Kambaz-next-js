@@ -1,13 +1,12 @@
- 'use client';
+ 'use client';
 import { AiOutlineDashboard } from "react-icons/ai";
 import { FaBook, FaFlask, FaInbox, FaRegCircleUser } from "react-icons/fa6";
 import { ListGroup, ListGroupItem } from "react-bootstrap";
 import Link from "next/link";
+import Image from "next/image";
 import { FaCalendarAlt } from "react-icons/fa";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
-
-const ITEM_CLASS = "text-decoration-none d-inline-block w-100 text-center py-2";
+import { useState, useEffect } from "react";const ITEM_CLASS = "text-decoration-none d-inline-block w-100 text-center py-2";
 const ICON_CLASS = "fs-1 d-block mx-auto";
 
 export default function KambazNavigation() {
@@ -15,8 +14,10 @@ export default function KambazNavigation() {
   const [activeButton, setActiveButton] = useState<string>("dashboard");
 
   useEffect(() => {
-    if (pathname === "/Dashboard" || pathname?.startsWith("/Dashboard/") || 
-        pathname?.startsWith("/Courses/")) {
+    if (pathname === "/Dashboard" || pathname?.startsWith("/Dashboard/")) {
+      setActiveButton("dashboard");
+    } else if (pathname?.startsWith("/Courses/")) {
+      setActiveButton("courses");
     } else if (pathname === "/Calendar" || pathname?.startsWith("/Calendar/")) {
       setActiveButton("calendar");
     } else if (pathname === "/Inbox" || pathname?.startsWith("/Inbox/")) {
@@ -57,7 +58,7 @@ export default function KambazNavigation() {
       
       <ListGroupItem className="bg-black border-0 text-center" as="a"
         target="_blank" href="https://www.northeastern.edu/" id="wd-neu-link">
-        <img src="/images/NEU.png" width="75px" alt="Northeastern University" />
+        <Image src="/images/NEU.png" width={75} height={75} alt="Northeastern University" />
       </ListGroupItem>
 
       <ListGroupItem className="border-0 bg-black text-center">
