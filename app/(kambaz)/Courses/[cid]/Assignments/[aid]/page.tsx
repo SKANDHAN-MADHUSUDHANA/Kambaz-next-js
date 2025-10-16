@@ -1,3 +1,5 @@
+/* eslint @typescript-eslint/no-explicit-any: "off" */
+"use client";
 import {
   FormControl,
   FormLabel,
@@ -7,51 +9,59 @@ import {
   Form,
 } from "react-bootstrap";
 import Link from "next/link";
+import { useParams } from "next/navigation";
+import { assignments } from "../../../../Database";
 
-export default async function AssignmentEditor({
-  params,
-}: {
-  params: Promise<{ cid: string; aid: string }>;
-}) {
-  const { cid } = await params;
+export default function AssignmentEditor() {
+  const { cid, aid } = useParams();
+  const assignment = assignments.find((a: any) => a._id === aid);
+
+  if (!assignment) {
+    return <div className="p-3 text-danger">Assignment not found.</div>;
+  }
+
+  // Use properties directly from the assignment object
+  const {
+    title,
+    description,
+    points,
+    dueDate,
+    availableDate,
+    group,
+    displayGradeAs,
+    submissionType,
+    assignTo,
+  } = assignment;
 
   return (
-    <div id="wd-assignments-editor" className="container">
-      {/* Assignment Name */}
+    <div id="wd-assignments-editor" className="container p-3">
       <FormLabel htmlFor="wd-name">Assignment Name</FormLabel>
-      <FormControl
-        id="wd-name"
-        defaultValue="A1 - ENV + HTML"
-        className="mb-3"
-      />
+      <FormControl id="wd-name" defaultValue={title} className="mb-3" />
 
-      {/* Description */}
       <FormLabel htmlFor="wd-description">Description</FormLabel>
       <Form.Control
         as="textarea"
         id="wd-description"
-        rows={5}
+        rows={10}
         className="mb-3"
-        defaultValue="The assignment is available online. Submit a link to the landing page of"
+        defaultValue={description}
       />
 
-      {/* Points */}
       <Row className="mb-3">
         <Col md={3}>
           <FormLabel htmlFor="wd-points">Points</FormLabel>
         </Col>
         <Col md={9}>
-          <FormControl type="number" id="wd-points" defaultValue={100} />
+          <FormControl id="wd-points" defaultValue={points} />
         </Col>
       </Row>
 
-      {/* Assignment Group */}
       <Row className="mb-3">
         <Col md={3}>
           <FormLabel htmlFor="wd-group">Assignment Group</FormLabel>
         </Col>
         <Col md={9}>
-          <FormSelect id="wd-group" defaultValue="ASSIGNMENTS">
+          <FormSelect id="wd-group" defaultValue={group}>
             <option>ASSIGNMENTS</option>
             <option>QUIZZES</option>
             <option>EXAMS</option>
@@ -60,20 +70,19 @@ export default async function AssignmentEditor({
         </Col>
       </Row>
 
-      {/* Display Grade As */}
       <Row className="mb-3">
         <Col md={3}>
           <FormLabel htmlFor="wd-display-grade-as">Display Grade as</FormLabel>
         </Col>
         <Col md={9}>
-          <FormSelect id="wd-display-grade-as" defaultValue="Percentage">
+          <FormSelect id="wd-display-grade-as" defaultValue={displayGradeAs}>
             <option>Percentage</option>
             <option>Points</option>
+            <option>Complete/Incomplete</option>
           </FormSelect>
         </Col>
       </Row>
 
-      {/* Submission Type */}
       <Row className="mb-3">
         <Col md={3}>
           <FormLabel htmlFor="wd-submission-type">Submission Type</FormLabel>
@@ -83,32 +92,23 @@ export default async function AssignmentEditor({
             <FormSelect
               id="wd-submission-type"
               className="mb-3"
-              defaultValue="Online"
+              defaultValue={submissionType}
             >
               <option>Online</option>
-              <option>On Paper</option>
+              <option>Paper</option>
               <option>External Tool</option>
             </FormSelect>
 
             <FormLabel className="d-block mb-2">Online Entry Options</FormLabel>
-            <Form.Check type="checkbox" label="Text Entry" id="wd-text-entry" />
-            <Form.Check type="checkbox" label="Website URL" id="wd-website-url" />
-            <Form.Check
-              type="checkbox"
-              label="Media Recordings"
-              id="wd-media-recordings"
-            />
-            <Form.Check
-              type="checkbox"
-              label="Student Annotation"
-              id="wd-student-annotation"
-            />
-            <Form.Check type="checkbox" label="File Uploads" id="wd-file-upload" />
+            <Form.Check type="checkbox" label="Text Entry" />
+            <Form.Check type="checkbox" label="Website URL" />
+            <Form.Check type="checkbox" label="Media Recordings" />
+            <Form.Check type="checkbox" label="Student Annotation" />
+            <Form.Check type="checkbox" label="File Uploads" />
           </div>
         </Col>
       </Row>
 
-      {/* Assign Section */}
       <Row className="mb-3">
         <Col md={3}>
           <FormLabel>Assign</FormLabel>
@@ -118,7 +118,7 @@ export default async function AssignmentEditor({
             <FormLabel htmlFor="wd-assign-to">Assign to</FormLabel>
             <FormControl
               id="wd-assign-to"
-              defaultValue="Everyone"
+              defaultValue={assignTo}
               className="mb-3"
             />
 
@@ -126,7 +126,7 @@ export default async function AssignmentEditor({
             <FormControl
               type="date"
               id="wd-due-date"
-              defaultValue="2024-05-13"
+              defaultValue={dueDate}
               className="mb-3"
             />
 
@@ -138,7 +138,7 @@ export default async function AssignmentEditor({
                 <FormControl
                   type="date"
                   id="wd-available-from"
-                  defaultValue="2024-05-06"
+                  defaultValue={availableDate}
                 />
               </Col>
               <Col md={6}>
@@ -146,7 +146,7 @@ export default async function AssignmentEditor({
                 <FormControl
                   type="date"
                   id="wd-available-until"
-                  defaultValue="2024-05-20"
+                  defaultValue="2025-10-30"
                 />
               </Col>
             </Row>
@@ -156,7 +156,6 @@ export default async function AssignmentEditor({
 
       <hr />
 
-      {/* Action Buttons */}
       <div className="d-flex justify-content-end">
         <Link
           href={`/Courses/${cid}/Assignments`}
