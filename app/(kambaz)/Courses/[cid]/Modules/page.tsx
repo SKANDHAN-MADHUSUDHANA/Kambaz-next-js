@@ -1,10 +1,18 @@
+/* eslint @typescript-eslint/no-explicit-any: "off" */
+
+"use client";
 import { ListGroup, ListGroupItem } from "react-bootstrap";
 import { BsGripVertical } from "react-icons/bs";
 import ModulesControls from "./ModulesControls";
 import LessonControlButtons from "./LessonControlButtons";
 import ModuleControlButtons from "./ModuleControlButton";
+import { useParams } from "next/navigation";
+import * as db from "../../../Database"; // adjust path if needed
 
 export default function Modules() {
+  const { cid } = useParams();
+  const modules = db.modules;
+
   return (
     <div>
       <ModulesControls />
@@ -12,144 +20,43 @@ export default function Modules() {
       <br />
       <br />
       <br />
-      <ListGroup className="rounded-0" id="wd-modules">
-        {/* Week 1 - Lecture 1 */}
-        <ListGroupItem className="wd-module p-0 mb-5 fs-5 border-gray">
-          <div className="wd-title p-3 ps-2 bg-secondary">
-            <BsGripVertical className="me-2 fs-3" />
-            Week 1, Lecture 1 - Course Introduction, Syllabus, Agenda
-            <ModuleControlButtons />
-          </div>
-          <ListGroup className="wd-lessons rounded-0">
-            {/* Learning Objectives */}
-            <ListGroupItem className="wd-lesson p-3 ps-1">
-              <BsGripVertical className="me-2 fs-3" /> LEARNING OBJECTIVES
-              <LessonControlButtons />
-            </ListGroupItem>
-            <ListGroupItem className="wd-lesson p-3 ps-1">
-              <BsGripVertical className="me-2 fs-3" /> Introduction to the course
-              <LessonControlButtons />
-            </ListGroupItem>
-            <ListGroupItem className="wd-lesson p-3 ps-1">
-              <BsGripVertical className="me-2 fs-3" /> Learn what is Web Development
-              <LessonControlButtons />
-            </ListGroupItem>
 
-            {/* Reading */}
-            <ListGroupItem className="wd-lesson p-3 ps-1">
-              <BsGripVertical className="me-2 fs-3" /> READING
-              <LessonControlButtons />
-            </ListGroupItem>
-            <ListGroupItem className="wd-content-item p-3 ps-5">
-              Full Stack Developer - Chapter 1 - Introduction
-            </ListGroupItem>
-            <ListGroupItem className="wd-content-item p-3 ps-5">
-              Full Stack Developer - Chapter 2 - Createing User
-            </ListGroupItem>
+      <ListGroup id="wd-modules" className="rounded-0">
+        {modules
+          .filter((module: any) => module.course === cid)
+          .map((module: any) => (
+            <ListGroupItem
+              key={module._id}
+              className="wd-module p-0 mb-5 fs-5 border-gray"
+            >
+              {/* Module Title */}
+              <div className="wd-title p-3 ps-2 bg-secondary d-flex align-items-center justify-content-between">
+                <div>
+                  <BsGripVertical className="me-2 fs-3" />
+                  {module.name}
+                </div>
+                <ModuleControlButtons />
+              </div>
 
-            {/* Slides */}
-            <ListGroupItem className="wd-lesson p-3 ps-1">
-              <BsGripVertical className="me-2 fs-3" /> SLIDES
-              <LessonControlButtons />
+              {/* Lessons List */}
+              {module.lessons && (
+                <ListGroup className="wd-lessons rounded-0">
+                  {module.lessons.map((lesson: any) => (
+                    <ListGroupItem
+                      key={lesson._id}
+                      className="wd-lesson p-3 ps-1 d-flex align-items-center justify-content-between"
+                    >
+                      <div>
+                        <BsGripVertical className="me-2 fs-3" />
+                        {lesson.name}
+                      </div>
+                      <LessonControlButtons />
+                    </ListGroupItem>
+                  ))}
+                </ListGroup>
+              )}
             </ListGroupItem>
-            <ListGroupItem className="wd-content-item p-3 ps-5">
-              Introduction to Web Development
-            </ListGroupItem>
-            <ListGroupItem className="wd-content-item p-3 ps-5">
-              Creating an HTTP server with Node.js
-            </ListGroupItem>
-            <ListGroupItem className="wd-content-item p-3 ps-5">
-              Creating a React Application
-            </ListGroupItem>
-          </ListGroup>
-        </ListGroupItem>
-
-        {/* Week 1 - Lecture 2 */}
-        <ListGroupItem className="wd-module p-0 mb-5 fs-5 border-gray">
-          <div className="wd-title p-3 ps-2 bg-secondary">
-            <BsGripVertical className="me-2 fs-3" />
-            Week 1, Lecture 2 - Formatting User Interface with HTML
-            <ModuleControlButtons />
-          </div>
-          <ListGroup className="wd-lessons rounded-0">
-            {/* Learning Objectives */}
-            <ListGroupItem className="wd-lesson p-3 ps-1">
-              <BsGripVertical className="me-2 fs-3" /> LEARNING OBJECTIVES
-              <LessonControlButtons />
-            </ListGroupItem>
-            <ListGroupItem className="wd-lesson p-3 ps-1">
-              <BsGripVertical className="me-2 fs-3" /> Introduction to the course
-              <LessonControlButtons />
-            </ListGroupItem>
-            <ListGroupItem className="wd-lesson p-3 ps-1">
-              <BsGripVertical className="me-2 fs-3" /> Learn what is Web Development
-              <LessonControlButtons />
-            </ListGroupItem>
-
-            {/* Reading */}
-            <ListGroupItem className="wd-lesson p-3 ps-1">
-              <BsGripVertical className="me-2 fs-3" /> READING
-              <LessonControlButtons />
-            </ListGroupItem>
-            <ListGroupItem className="wd-content-item p-3 ps-5">
-              Full Stack Developer - Chapter 1 - Introduction
-            </ListGroupItem>
-            <ListGroupItem className="wd-content-item p-3 ps-5">
-              Full Stack Developer - Chapter 2 - Createing User
-            </ListGroupItem>
-
-            {/* Slides */}
-            <ListGroupItem className="wd-lesson p-3 ps-1">
-              <BsGripVertical className="me-2 fs-3" /> SLIDES
-              <LessonControlButtons />
-            </ListGroupItem>
-            <ListGroupItem className="wd-content-item p-3 ps-5">
-              Introduction to Web Development
-            </ListGroupItem>
-            <ListGroupItem className="wd-content-item p-3 ps-5">
-              Creating an HTTP server with Node.js
-            </ListGroupItem>
-            <ListGroupItem className="wd-content-item p-3 ps-5">
-              Creating a React Application
-            </ListGroupItem>
-          </ListGroup>
-        </ListGroupItem>
-
-        {/* Week 3 - Lecture 2 */}
-        <ListGroupItem className="wd-module p-0 mb-5 fs-5 border-gray">
-          <div className="wd-title p-3 ps-2 bg-secondary">
-            <BsGripVertical className="me-2 fs-3" />
-            Week 3, Lecture 2 - Formatting User Interface with HTML
-            <ModuleControlButtons />
-          </div>
-          <ListGroup className="wd-lessons rounded-0">
-            {/* Learning Objectives */}
-            <ListGroupItem className="wd-lesson p-3 ps-1">
-              <BsGripVertical className="me-2 fs-3" /> LEARNING OBJECTIVES
-              <LessonControlButtons />
-            </ListGroupItem>
-            <ListGroupItem className="wd-lesson p-3 ps-1">
-              <BsGripVertical className="me-2 fs-3" /> Introduction to the course
-              <LessonControlButtons />
-            </ListGroupItem>
-            <ListGroupItem className="wd-lesson p-3 ps-1">
-              <BsGripVertical className="me-2 fs-3" /> Learn what is Web Development
-              <LessonControlButtons />
-            </ListGroupItem>
-
-            {/* Reading */}
-            <ListGroupItem className="wd-lesson p-3 ps-1">
-              <BsGripVertical className="me-2 fs-3" /> READING
-              <LessonControlButtons />
-            </ListGroupItem>
-            <ListGroupItem className="wd-content-item p-3 ps-5">
-              Full Stack Developer - Chapter 1 - Introduction
-            </ListGroupItem>
-            <ListGroupItem className="wd-content-item p-3 ps-5">
-              Full Stack Developer - Chapter 2 - Createing User
-            </ListGroupItem>
-          </ListGroup>
-        </ListGroupItem>
+          ))}
       </ListGroup>
     </div>
   );

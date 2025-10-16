@@ -1,3 +1,5 @@
+/* eslint no-var: "off" */
+/* eslint react/jsx-key: "off" */
 import TodoItem from "./TodoItem";
 import todos from "./todos.json";
 import { ListGroup } from "react-bootstrap";
