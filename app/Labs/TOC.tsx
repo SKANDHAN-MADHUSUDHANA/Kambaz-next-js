@@ -41,7 +41,8 @@ export default function TOC() {
     { href: "/Labs/Lab4", label: "Lab 4", id: "wd-lab4" },
     { href: "/Labs/Lab5", label: "Lab 5", id: "wd-lab5" },
     { href: "/", label: "Kambaz", id: "wd-kambaz" },
-    { href:"https://github.com/SKANDHAN-MADHUSUDHANA/Kambaz-next-js", label: "My GitHub", id: "wd-github" }
+    { href:"https://github.com/SKANDHAN-MADHUSUDHANA/Kambaz-next-js", label: "Frontend GitHub", id: "wd-github" },
+    { href:"https://github.com/SKANDHAN-MADHUSUDHANA/kambaz-node-server-app-", label: "Backend GitHub", id: "wd-github" }
   ];
 
   return (
