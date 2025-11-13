@@ -14,7 +14,7 @@ export default function KambazLayout({ children }: { children: ReactNode }) {
           <div className="d-none d-md-block me-4">
             <AccountNavigation />
           </div>
-          <div className="flex-fill">{children}</div>
+          <div className="wd-main-content-offset p-3 flex-fill">{children}</div>
         </div>
       </Session>
     </Provider>
