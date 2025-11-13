@@ -5,6 +5,7 @@ import { Provider } from "react-redux";
 import store from "../(kambaz)/store";
 import Session from "./Account/Session";
 import AccountNavigation from "./Navigation";
+import "./styles.css";
 
 export default function KambazLayout({ children }: { children: ReactNode }) {
   return (
