@@ -9,29 +9,79 @@ import { CiSearch } from "react-icons/ci";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import { deleteAssignment } from "./reducer";
-import { useState } from "react";
+
+import { setAssignments } from "./reducer";
+import { setCurrentUser } from "../../../Account/reducer";
+
+import { useState, useEffect, useCallback } from "react";
+import * as client from "../../client";
+import * as accountClient from "../../../Account/client";
 
 export default function Assignments() {
   const { cid } = useParams();
-  const { assignments } = useSelector((state: any) => state.assignmentsReducer);
+
+  // ✅ FIX: safe selector (assignments always an array)
+  const assignments = useSelector(
+    (state: any) => state.assignmentsReducer.assignments
+  );
+
   const { currentUser } = useSelector((state: any) => state.accountReducer);
   const dispatch = useDispatch();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [assignmentToDelete, setAssignmentToDelete] = useState<any>(null);
 
-  const courseAssignments = assignments.filter((a: any) => a.course === cid);
   const isFaculty = currentUser?.role === "FACULTY";
+
+  // Fetch user
+  const fetchProfile = useCallback(async () => {
+    if (!currentUser) {
+      try {
+        const user = await accountClient.profile();
+        dispatch(setCurrentUser(user));
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    }
+  }, [currentUser, dispatch]);
+
+  // Fetch assignments
+  const fetchAssignments = useCallback(async () => {
+    if (!cid) return;
+
+    try {
+      const response = await client.findAssignmentsForCourse(cid as string);
+
+      // ⭐ FIX: always send an array
+      dispatch(setAssignments(response || []));
+    } catch (error) {
+      console.error("Error fetching assignments:", error);
+    }
+  }, [cid, dispatch]);
+
+  useEffect(() => {
+    fetchProfile();
+    fetchAssignments();
+  }, [fetchProfile, fetchAssignments]);
 
   const handleDeleteClick = (assignment: any) => {
     setAssignmentToDelete(assignment);
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = () => {
-    if (assignmentToDelete) {
-      dispatch(deleteAssignment(assignmentToDelete._id));
+  const confirmDelete = async () => {
+    if (assignmentToDelete && cid) {
+      try {
+        await client.deleteAssignment(cid as string, assignmentToDelete._id);
+
+        dispatch(
+          setAssignments(
+            assignments.filter((a: any) => a._id !== assignmentToDelete._id)
+          )
+        );
+      } catch (error) {
+        console.error("Error deleting assignment:", error);
+      }
     }
     setShowDeleteModal(false);
     setAssignmentToDelete(null);
@@ -50,6 +100,7 @@ export default function Assignments() {
             className="border-start-0"
           />
         </div>
+
         {isFaculty && (
           <div>
             <Button
@@ -61,6 +112,7 @@ export default function Assignments() {
               <FaPlus className="me-1" />
               Group
             </Button>
+
             <Link href={`/Courses/${cid}/Assignments/new`}>
               <Button variant="danger" size="lg" id="wd-add-assignment">
                 <FaPlus className="me-1" />
@@ -79,6 +131,7 @@ export default function Assignments() {
               <FaCaretDown className="me-2" />
               <span className="fw-bold">ASSIGNMENTS</span>
             </div>
+
             <div className="d-flex align-items-center">
               <span className="badge rounded-pill border border-dark text-dark me-2">
                 40% of Total
@@ -87,14 +140,16 @@ export default function Assignments() {
               <IoEllipsisVertical className="fs-4" />
             </div>
           </div>
+
           <ul className="wd-lessons list-group rounded-0">
-            {courseAssignments.map((assignment: any) => (
+            {assignments.map((assignment: any) => (
               <li
                 key={assignment._id}
                 className="wd-lesson list-group-item p-3 d-flex justify-content-between align-items-start"
               >
                 <div className="d-flex align-items-start w-100">
                   <BsGripVertical className="me-2 fs-3" />
+
                   <div
                     className="ms-2 flex-grow-1"
                     style={{
@@ -108,20 +163,24 @@ export default function Assignments() {
                     >
                       {assignment.title}
                     </Link>
+
                     <div className="mt-1">
                       <span className="text-danger">Multiple Modules</span>
                       <span className="text-muted"> | </span>
                       <span className="fw-bold">Not available until</span>
                       <span className="text-muted">
                         {" "}
-                        {assignment.availableDate}
+                        {assignment.availableFrom ||
+                          assignment.availableDate}
                       </span>
                     </div>
+
                     <div className="text-muted">
                       <span className="fw-bold">Due</span> {assignment.dueDate}{" "}
                       | {assignment.points} pts
                     </div>
                   </div>
+
                   <div className="d-flex align-items-center">
                     {isFaculty && (
                       <FaTrash
@@ -140,18 +199,20 @@ export default function Assignments() {
         </li>
       </ul>
 
-      {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Confirm Delete</Modal.Title>
         </Modal.Header>
+
         <Modal.Body>
           {`Are you sure you want to delete the assignment "${assignmentToDelete?.title}"?`}
         </Modal.Body>
+
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
             Cancel
           </Button>
+
           <Button variant="danger" onClick={confirmDelete}>
             Delete
           </Button>
