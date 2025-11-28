@@ -12,18 +12,19 @@ import {
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import { addAssignment, updateAssignment } from "../reducer";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { setCurrentUser } from "../../../../Account/reducer";
+import * as client from "../../../client";
+import * as accountClient from "../../../../Account/client";
 
 export default function AssignmentEditor() {
   const { cid, aid } = useParams();
   const router = useRouter();
-  const dispatch = useDispatch();
-  const { assignments } = useSelector((state: any) => state.assignmentsReducer);
   const { currentUser } = useSelector((state: any) => state.accountReducer);
+  const dispatch = useDispatch();
 
   const isNew = aid === "new";
-  const existingAssignment = assignments.find((a: any) => a._id === aid);
+  const isFaculty = currentUser?.role === "FACULTY";
 
   // Initial state matching your database structure
   const [assignment, setAssignment] = useState<any>({
@@ -33,52 +34,71 @@ export default function AssignmentEditor() {
     course: cid,
     points: 100,
     dueDate: "2025-10-20",
-    availableDate: "2025-10-10",
+    availableFrom: "2025-10-10",
     availableUntil: "2025-10-30",
-    group: "ASSIGNMENTS",
+    assignmentGroup: "ASSIGNMENTS",
     displayGradeAs: "Percentage",
     submissionType: "Online",
     assignTo: "Everyone",
   });
 
+  // ✅ Fetch current user profile on mount
+  const fetchProfile = useCallback(async () => {
+    if (!currentUser) {
+      try {
+        const user = await accountClient.profile();
+        dispatch(setCurrentUser(user));
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    }
+  }, [currentUser, dispatch]);
+
   useEffect(() => {
-    if (!isNew && existingAssignment) {
-      setAssignment(existingAssignment);
-    }
-  }, [existingAssignment, isNew]);
+    fetchProfile();
+  }, [fetchProfile]);
 
-  const handleSave = () => {
-    if (isNew) {
-      dispatch(addAssignment({ ...assignment, course: cid }));
-    } else {
-      dispatch(updateAssignment(assignment));
+  useEffect(() => {
+    if (!isNew && cid && aid) {
+      const fetchAssignment = async () => {
+        try {
+          const existingAssignment = await client.findAssignmentById(
+            cid as string,
+            aid as string
+          );
+          if (existingAssignment) {
+            setAssignment(existingAssignment);
+          }
+        } catch (error) {
+          console.error("Error fetching assignment:", error);
+        }
+      };
+      fetchAssignment();
     }
-    router.push(`/Courses/${cid}/Assignments`);
+  }, [aid, cid, isNew]);
+
+  const handleSave = async () => {
+    try {
+      if (isNew) {
+        await client.createAssignment(cid as string, assignment);
+      } else {
+        await client.updateAssignment(cid as string, assignment);
+      }
+      router.push(`/Courses/${cid}/Assignments`);
+    } catch (error) {
+      console.error("Error saving assignment:", error);
+      alert("Failed to save assignment");
+    }
   };
-
-  // Only faculty can edit
-  if (currentUser?.role !== "FACULTY") {
-    return (
-      <div className="p-3">
-        <div className="alert alert-warning">
-          You don&apos;t have permission to edit assignments.
-        </div>
-        <Link
-          href={`/Courses/${cid}/Assignments`}
-          className="btn btn-secondary"
-        >
-          Back to Assignments
-        </Link>
-      </div>
-    );
-  }
-
-  if (!isNew && !existingAssignment) {
-    return <div className="p-3 text-danger">Assignment not found.</div>;
-  }
 
   return (
     <div id="wd-assignments-editor" className="container p-3">
+      {!isFaculty && (
+        <div className="alert alert-info mb-3">
+          You are viewing this assignment in read-only mode.
+        </div>
+      )}
+
       <FormLabel htmlFor="wd-name">Assignment Name</FormLabel>
       <FormControl
         id="wd-name"
@@ -87,6 +107,7 @@ export default function AssignmentEditor() {
           setAssignment({ ...assignment, title: e.target.value })
         }
         className="mb-3"
+        disabled={!isFaculty} 
       />
 
       <FormLabel htmlFor="wd-description">Description</FormLabel>
@@ -99,6 +120,7 @@ export default function AssignmentEditor() {
         onChange={(e) =>
           setAssignment({ ...assignment, description: e.target.value })
         }
+        disabled={!isFaculty} // ✅ Disable for students
       />
 
       <Row className="mb-3">
@@ -116,6 +138,7 @@ export default function AssignmentEditor() {
                 points: parseInt(e.target.value) || 0,
               })
             }
+            disabled={!isFaculty} 
           />
         </Col>
       </Row>
@@ -127,10 +150,11 @@ export default function AssignmentEditor() {
         <Col md={9}>
           <FormSelect
             id="wd-group"
-            value={assignment.group}
+            value={assignment.assignmentGroup}
             onChange={(e) =>
-              setAssignment({ ...assignment, group: e.target.value })
+              setAssignment({ ...assignment, assignmentGroup: e.target.value })
             }
+            disabled={!isFaculty} // ✅ Disable for students
           >
             <option value="ASSIGNMENTS">ASSIGNMENTS</option>
             <option value="QUIZZES">QUIZZES</option>
@@ -151,6 +175,7 @@ export default function AssignmentEditor() {
             onChange={(e) =>
               setAssignment({ ...assignment, displayGradeAs: e.target.value })
             }
+            disabled={!isFaculty} // ✅ Disable for students
           >
             <option value="Percentage">Percentage</option>
             <option value="Points">Points</option>
@@ -172,6 +197,7 @@ export default function AssignmentEditor() {
               onChange={(e) =>
                 setAssignment({ ...assignment, submissionType: e.target.value })
               }
+              disabled={!isFaculty} // ✅ Disable for students
             >
               <option value="Online">Online</option>
               <option value="Paper">Paper</option>
@@ -179,26 +205,35 @@ export default function AssignmentEditor() {
             </FormSelect>
 
             <FormLabel className="d-block mb-2">Online Entry Options</FormLabel>
-            <Form.Check type="checkbox" label="Text Entry" id="wd-text-entry" />
+            <Form.Check 
+              type="checkbox" 
+              label="Text Entry" 
+              id="wd-text-entry" 
+              disabled={!isFaculty} // ✅ Disable for students
+            />
             <Form.Check
               type="checkbox"
               label="Website URL"
               id="wd-website-url"
+              disabled={!isFaculty} 
             />
             <Form.Check
               type="checkbox"
               label="Media Recordings"
               id="wd-media-recordings"
+              disabled={!isFaculty} 
             />
             <Form.Check
               type="checkbox"
               label="Student Annotation"
               id="wd-student-annotation"
+              disabled={!isFaculty} 
             />
             <Form.Check
               type="checkbox"
               label="File Uploads"
               id="wd-file-upload"
+              disabled={!isFaculty} 
             />
           </div>
         </Col>
@@ -218,6 +253,7 @@ export default function AssignmentEditor() {
                 setAssignment({ ...assignment, assignTo: e.target.value })
               }
               className="mb-3"
+              disabled={!isFaculty} 
             />
 
             <FormLabel htmlFor="wd-due-date">Due</FormLabel>
@@ -229,6 +265,7 @@ export default function AssignmentEditor() {
                 setAssignment({ ...assignment, dueDate: e.target.value })
               }
               className="mb-3"
+              disabled={!isFaculty}
             />
 
             <Row>
@@ -239,13 +276,14 @@ export default function AssignmentEditor() {
                 <FormControl
                   type="date"
                   id="wd-available-from"
-                  value={assignment.availableDate}
+                  value={assignment.availableFrom}
                   onChange={(e) =>
                     setAssignment({
                       ...assignment,
-                      availableDate: e.target.value,
+                      availableFrom: e.target.value,
                     })
                   }
+                  disabled={!isFaculty} 
                 />
               </Col>
               <Col md={6}>
@@ -260,6 +298,7 @@ export default function AssignmentEditor() {
                       availableUntil: e.target.value,
                     })
                   }
+                  disabled={!isFaculty} 
                 />
               </Col>
             </Row>
@@ -274,11 +313,13 @@ export default function AssignmentEditor() {
           href={`/Courses/${cid}/Assignments`}
           className="btn btn-secondary me-2"
         >
-          Cancel
+          {isFaculty ? "Cancel" : "Back"} 
         </Link>
-        <Button variant="danger" onClick={handleSave}>
-          Save
-        </Button>
+        {isFaculty && ( 
+          <Button variant="danger" onClick={handleSave}>
+            Save
+          </Button>
+        )}
       </div>
     </div>
   );
